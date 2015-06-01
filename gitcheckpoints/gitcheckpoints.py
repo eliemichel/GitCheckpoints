@@ -122,8 +122,8 @@ class GitCheckpoints(FileManagerMixin, Checkpoints):
 
     def list_checkpoints(self, path):
         """list the checkpoints for a given file"""
-        path = os.path.join(self.git_dir, path)
-        list = []
+        path = self.git_dir + path
+        checkpointList = []
         if os.path.isfile(path):
             try:
                 output = subprocess.check_output(['git', 'log', '--pretty=format:"%h - %cd"', path], stderr=subprocess.STDOUT, cwd=self.git_dir)
@@ -131,7 +131,7 @@ class GitCheckpoints(FileManagerMixin, Checkpoints):
                 for commit in output.splitlines():
                     cp = self.checkpoint_model(commit)
                     if cp:
-                        list.append(cp)
+                        checkpointList.append(cp)
             except subprocess.CalledProcessError as e:
                 if e.returncode == 128:
                     #file not committed
@@ -139,7 +139,7 @@ class GitCheckpoints(FileManagerMixin, Checkpoints):
                 else:
                     err = e.output.decode(DEFAULT_ENCODING, 'replace')
                     self.log.exception(err)
-        return list
+        return checkpointList
 
     def checkpoint_model(self, log):
         """construct the info dict for a given checkpoint"""
